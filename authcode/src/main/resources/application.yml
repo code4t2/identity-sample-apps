@@ -1,16 +1,29 @@
+---
 server:
-  port: 8888
-  tomcat:
-    remote_ip_header: x-forwarded-for
-    protocol_header: x-forwarded-proto
-    internal_proxies: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}
-spring:
-  thymeleaf:
-    cache: false
-security:
-  ignored: /favicon.ico, /, /authorization_code
-  basic:
-    enabled: false
+  port: 8080
+
 logging.level:
   org.springframework.security: DEBUG
-resourceServerUrl: ${RESOURCE_URL:https://resource-server.domain}
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          sso:
+            client-id: "fd85860d-fca0-4276-aa7f-ce2a3baeeb57"
+            client-secret: "cf9961c8-0938-44ea-8f66-1fb2438759b1"
+            authorization-grant-type: "authorization_code"
+            client-name: "sso"
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            # NOTE: scope must explicitly be defined or else spring security will request a predefined list of scopes
+            # 'email' or 'profile' is required to access the "/userinfo" endpoint via DefaultOidcUser
+            scope: "openid,email,todo.read,todo.write"
+        provider:
+          sso:
+            # NOTE: ONLY the 'issuer-uri' must be specified in the 'provider sso' configuration.
+            # This ensures that the Principal is OIDCUser instance, which is required to get the ID Token and UserInfo Endpoint data.
+            issuer-uri: "https://demo.uaa.run.pivotal.io/oauth/token"
+            authorization-uri: "https://demo.login.run.pivotal.io/oauth/authorize"
+
+ssoServiceUrl: "https://demo.login.run.pivotal.io"
